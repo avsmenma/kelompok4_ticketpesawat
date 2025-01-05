@@ -30,7 +30,7 @@ Kemudian download pymongo dari library python melalui terminal
 ```
 pip install pymongo
 ```
-Untuk menjalankan aplikasi ini, run file dengan nama main.py
+Untuk menjalankan aplikasi ini, run file bernama main.py
 ```sh
 main.py
 ```
