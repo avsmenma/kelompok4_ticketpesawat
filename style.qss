@@ -1,0 +1,195 @@
+QMainWindow {
+    background-color: #E2EFDE
+}
+
+#widget {
+    background-color: #E2EFDE;
+}
+
+QDialog {
+    background-color: #E2EFDE;
+    color: black;
+}
+
+QWidget#pencarian {
+    background-color: #5998C5
+}
+
+QLabel#judul {
+    color: #02C3BD;
+    font-family: Helvetica;
+    font-weight: bold;
+    font-size: 25px;
+}
+
+QLabel#subjudul {
+    color: black;
+    font-family: Yu Gothic;
+    font-size: 12px;
+}
+
+QLabel#ask {
+    color: black;
+    font-family: Arial;
+    font-weight: bold;
+    font-size: 20px;
+    padding: 5px;
+    margin-top: 5px;
+}
+
+QLabel#hasil_pencarian {
+    color: black;
+    font-family: Arial;
+    font-weight: bold;
+    font-size: 18px;
+    padding: 5px;
+}
+
+QLabel#nofind {
+    color: white;
+    font-size: 15px;
+    font-family: Yu Gothic;
+    font-weight: bold;
+
+}
+
+QLabel#maskapai {
+    color: black;
+    font-family: Arial;
+    font-weight: bold;
+    font-size: 30px;
+}
+
+QLabel#info {
+    color: black;
+    font-family: Yu Gothic;
+    font-weight: bold;
+    font-size: 13px;
+    padding: 10px;
+}
+
+QLabel#jumlah {
+    color: black;
+    font-family: Arial;
+    font-weight: bold;
+    font-size: 18px;
+    margin-top:10px;
+    margin-bottom: 20px;
+}
+
+QLabel#harga {
+    color: green;
+    font-family: Arial;
+    font-weight: bold;
+    font-size: 25px;
+}
+
+QLabel#konfirmasi {
+    color: black;
+    font-size: 20px;
+    font-weight: medium;
+    font-family: helvetica
+}
+
+QLabel#sukses {
+    color: black;
+    font-size: 25px;
+    font-weight: bold;
+    font-family:helvetica;
+    margin-bottom: 50px;
+}
+
+QLabel#mark {
+    image: url("mark.png");
+    font-size: 120px;
+    padding: 50px;
+}
+
+QLabel#bukti {
+    color: black;
+    font-size: 14px;
+    font-family: helvetica;
+    padding: 10px;
+    margin-bottom: 2px;
+}
+
+QLabel#berhasil {
+    color: green;
+    font-size: 15px;
+    font-family: Yu Gothic;
+    font-weight: bold;
+}
+
+QPushButton {
+    color: white;
+    background-color: #037171;
+    font-family: Arial;
+    font-weight: bold;
+}
+
+QPushButton::hover {
+    background-color: #03312E;
+}
+
+QPushButton#out {
+    color: white;
+    background-color: #037171;
+    font-family: Arial;
+    font-size: 12px;
+    font-weight: bold;
+    padding: 5px;
+    border-radius: 8px;
+}
+
+QPushButton#out::hover {
+    background-color: #03312E;
+}
+
+QPushButton#cari {
+    color: white;
+    background-color: #5C9EAD;
+    font-family: Calibri;
+    font-weight: bold;
+    height: 25px;
+}
+
+QPushButton#hasil {
+    background-color:  #4E8098;
+    color: white;
+    font-family: Helvetica;
+    font-weight: bold;
+    font-size: 18px;
+    height: 50px;
+}
+
+QPushButton#hasil::hover {
+    background-color: #35596A
+}
+
+QPushButton#cari::hover {
+    background-color: #326273;
+}
+
+QLineEdit {
+    font-family: Calibri;
+    font-weight: bold;
+    height: 25px;
+    background-color: #5C9EAD;
+    color:  white;
+}
+
+QDateEdit {
+    font-family: Calibri;
+    color: white;
+    background-color: #5C9EAD;
+    font-weight: bold;
+    height: 30px;
+}
+
+QSlider::handle {
+    image:url(airplane.png);
+}
+
+QScrollBar {
+    background-color: #326273;
+}
