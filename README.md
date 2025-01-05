@@ -22,3 +22,15 @@ Aplikasi ini dibangun dengan
 - MongoDB
 
 ## Instalasi
+Download PySide6 dari library python melalui terminal
+```
+pip install PySide6
+```
+Kemudian download pymongo dari library python melalui terminal
+```
+pip install pymongo
+```
+Untuk menjalankan aplikasi ini, run file dengan nama main.py
+```
+main.py
+```
