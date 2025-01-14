@@ -7,28 +7,29 @@ WingsJourney adalah sebuah aplikasi yang dirancang untuk mempermudah pengguna da
 - Fitur Lupa Password
 - Searching Data Penerbangan
 - Form Pemesanan Tiket
+- Transaksi tiket
 - Laporan Transaksi
 
 ## Tech
 Aplikasi ini dibangun dengan
 - [Python] - Bahasa pemrograman tingkat tinggi yang sederhana dan mudah untuk dipahami, biasanya digunakan untuk pengembangan web, analisis data, machine learning, dan lain - lain.
-- [MongoDB] - Database NoSQL yang digunakan untuk menyimpan data secara efisien, cocok untuk aplikasi berbasis web.
+- [SQL] - Database SQL yang digunakan untuk menyimpan data secara efisien, cocok untuk aplikasi berbasis web.
 - [PySide6 Framework] - Framework untuk membangun user interface berbasis Python
 - [QSS] - Style Sheets yang memungkinkan pembuatan user interface dengan tampilan yang menarik
 
 ## Requirement
 - Integrated Development Environment (IDE)
 - Python
-- MongoDB
+- MySQL
 
 ## Instalasi
 Download PySide6 dari library python melalui terminal
 ```
 pip install PySide6
 ```
-Kemudian download pymongo dari library python melalui terminal
+Kemudian download flask dari library python melalui terminal
 ```
-pip install pymongo
+pip install flask
 ```
 Untuk menjalankan aplikasi ini, run file bernama main.py
 ```sh
