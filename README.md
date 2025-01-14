@@ -38,6 +38,9 @@ pip install qrcode
 ```
 pip install mysql-connector-python
 ```
+```
+pip install bcrypt
+```
 Untuk menjalankan aplikasi ini, run file bernama main.py
 ```sh
 main.py
