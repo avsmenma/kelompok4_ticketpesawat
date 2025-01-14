@@ -22,16 +22,17 @@ from pymongo import MongoClient
 from pymongo.errors import ConnectionFailure
 
 import random
+import mysql.connector
+from mysql.connector import Error
 
+import bcrypt
+import hashlib
 
-
-MONGO_URL = "mongodb+srv://admin:admin@cluster0.sleh9.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
-client = MongoClient(MONGO_URL)
-db = client['avsmenma']
-users = db['posts']
+import string
 
 class MainWindow(QWidget):
     def __init__(self):
+
         super().__init__()
         self.UI()
 
@@ -126,15 +127,12 @@ class MainWindow(QWidget):
         return
 
     def fun_login(self):
-        # Mengambil input email dan memvalidasi
         email = self.input_email.text().strip()
         password = self.input_password.text().strip()
 
-        # cari_email = users.find_one({"email": email})
-        # cari_password = users.find_one({"password": password})
-
         if not email and not password:
             QMessageBox.warning(self, "Perhatian", "Harap isi email dan password")
+            return
 
         if not email:
             QMessageBox.warning(self, "Perhatian", "Email tidak boleh kosong!")
@@ -144,66 +142,160 @@ class MainWindow(QWidget):
             QMessageBox.warning(self, "Perhatian", "Password tidak boleh kosong!")
             return
 
-        cek_emailDanPassword = users.find_one({"email": email, "password": password})
+        try:
+            connect = mysql.connector.connect(
+                host = "localhost",
+                user="root",
+                password="",
+                database="penerbangan"
+            )
+            cursor = connect.cursor(dictionary=True)
 
-        if cek_emailDanPassword:
+            # Cari user berdasarkan email saja
+            query = "SELECT id, nama, email, no_telp, password, role FROM akun WHERE email = %s"
+            cursor.execute(query, (email,))
+            user = cursor.fetchone()
 
-            verify_code = str(random.randint(100000, 999999))
-            filter_email = {"email": email}
+            if user:
+                # Cek apakah user adalah admin
+                if user['role'] == 'admin':
+                    # Untuk admin, langsung bandingkan password tanpa hashing
+                    password_matches = (password == user['password'])
 
-            new_code = {"$set": {"verify_code": verify_code}}
+                    from dashboard_admin import Home_Page
+                    self.close()
+                    self.goToDashboardAdminPage = Home_Page()
+                    app.setStyle("Fusion")
+                    stylesheet_path = "style_admin.qss"
+                    apply_stylesheet(app, stylesheet_path)
+                    self.goToDashboardAdminPage.show()
+                    return
+                else:
+                    # Untuk user biasa, gunakan verifikasi dengan bcrypt
+                    password_matches = self.verify_password(password, user['password'])
 
-            users.update_one(filter_email, new_code)
-            QMessageBox.information(self, "Notifikasi","Tunggu Sebentar")
+                if password_matches:
+                    verify_code = str(random.randint(100000, 999999))
+                    update_query = "UPDATE akun SET verify_code = %s WHERE email = %s"
+                    cursor.execute(update_query, (verify_code, email))
+                    connect.commit()
 
-            
+                    # Store user data
+                    self.user_data = {
+                        'id': user['id'],
+                        'nama': user['nama'],
+                        'email': user['email'],
+                        'no_telp': user['no_telp'],
+                        'role': user['role']
+                    }
 
-            
+                    try:
+                        QMessageBox.information(self, "Notifikasi", "Tunggu Sebentar")
+                        
+                        # Kirim kode verifikasi ke email
+                        server = smtplib.SMTP("smtp.gmail.com", 587)
+                        server.starttls()
+                        server.login("telegramstarsbusines@gmail.com", "swko ydjl dvou bhus")
 
-        
-            try:
-                server = smtplib.SMTP("smtp.gmail.com", 587)
-                server.starttls()
+                        # Isi pesan HTML
+                        html_content = f"""
+                        <html>
+                        <head>
+                            <style>
+                                body {{
+                                    font-family: Arial, sans-serif;
+                                    background-color: #f9f9f9;
+                                    color: #333;
+                                    padding: 20px;
+                                }}
+                                .email-container {{
+                                    background-color: #ffffff;
+                                    padding: 20px;
+                                    border: 1px solid #dddddd;
+                                    border-radius: 8px;
+                                    max-width: 600px;
+                                    margin: auto;
+                                }}
+                                .header {{
+                                    text-align: center;
+                                    font-size: 24px;
+                                    font-weight: bold;
+                                    color: #0066CC;
+                                }}
+                                .content {{
+                                    font-size: 16px;
+                                    margin-top: 20px;
+                                    line-height: 1.5;
+                                }}
+                                .footer {{
+                                    text-align: center;
+                                    font-size: 12px;
+                                    color: #888888;
+                                    margin-top: 20px;
+                                }}
+                            </style>
+                        </head>
+                        <body>
+                            <div class="email-container">
+                                <div class="header">Kode Verifikasi Anda</div>
+                                <div class="content">
+                                    <p>Halo,</p>
+                                    <p>Selamat Datang Di WingsJourney. Berikut adalah kode verifikasi Anda:</p>
+                                    <p style="font-size: 20px; font-weight: bold; text-align: center; color: #0066CC;">
+                                        {verify_code}
+                                    </p>
+                                    <p>Silakan masukkan kode ini untuk memverifikasi akun Anda.</p>
+                                </div>
+                                <div class="footer">
+                                    &copy; 2025 WingsJourney Business. Semua Hak Dilindungi.
+                                </div>
+                            </div>
+                        </body>
+                        </html>
+                        """
 
-                # Login ke akun pengirim
-                server.login("telegramstarsbusines@gmail.com", "swko ydjl dvou bhus")
+                        # Buat pesan email
+                        message = MIMEMultipart("alternative")
+                        message['From'] = "telegramstarsbusines@gmail.com"
+                        message['To'] = email
+                        message['Subject'] = "Kode Verifikasi Anda"
+                        message.attach(MIMEText(html_content, "html"))
 
-                # Membuat email
-                message = MIMEMultipart()
-                message['From'] = "telegramstarsbusines@gmail.com"
-                message['To'] = email  # Gunakan input_email untuk email tujuan
-                message['Subject'] = "Kode Verifikasi"
-                message.attach(MIMEText(f'Kode Verifikasi anda adalah : {verify_code}'))  # Isi dengan teks
+                        server.send_message(message)
+                        server.quit()
 
-                # Mengirim email
-                server.send_message(message)
+                        QMessageBox.information(self, "Notifikasi", "Kode Verifikasi Sudah dikirim...")
+                        self.toWindowKonfirmasi()
 
-                server.quit()
+                    except Exception as e:
+                        QMessageBox.critical(self, "Kesalahan", f"Gagal mengirim email: {e}")
+                else:
+                    QMessageBox.warning(self, "Notifikasi", "Email atau password anda salah")
 
-                # Tampilkan notifikasi setelah email bercari_email dikirim
-                QMessageBox.information(self, "Notifikasi", f"Kode Verifikasi Sudah dikirim...")
-                self.toWindowKonfirmasi()
+            else:
+                QMessageBox.warning(self, "Notifikasi", "Email atau password anda salah")
 
-            except Exception as e:
-                print(f"Terjadi kesalahan: {e}")
-                QMessageBox.critical(self, "Kesalahan", f"Gagal mengirim email: {e}")
-                return
+            cursor.close()
+            connect.close()
 
+        except mysql.connector.Error as err:
+            QMessageBox.critical(self, "Kesalahan", f"Koneksi database gagal: {err}")
 
-        else:
-            QMessageBox.warning(self, "Notifikasi", "Email atau password anda salah")
+    def verify_password(self, password, hashed_password):
+        return bcrypt.checkpw(password.encode(), hashed_password.encode())
+
 
     def toWindowKonfirmasi(self):
-        email = self.input_email.text().strip()  # Ambil email sebelum menutup window
         self.close()
-        self.changeWindow = konfirmasi_login(email)  # Pass email ke window konfirmasi
+        self.changeWindow = konfirmasi_login(self.input_email.text().strip(), self.user_data)
         self.changeWindow.show()
                         
 class konfirmasi_login(QWidget):
 
-    def __init__(self, email):  # Tambah parameter email
+    def __init__(self, email, user_data):
         super().__init__()
-        self.user_email = email  # Simpan email sebagai instance variable
+        self.user_email = email
+        self.user_data = user_data
         self.window_konfirmasiLogin()
 
     def window_konfirmasiLogin(self):
@@ -242,9 +334,33 @@ class konfirmasi_login(QWidget):
             }
         """)
         tombol_login.clicked.connect(self.fun_verify)
+        
+
+        tombol_backToLoginPage = QPushButton("Back")
+        tombol_backToLoginPage.setStyleSheet("""
+            QPushButton {
+                background-color: #3498db;
+                color: white;
+                padding: 10px;
+                border: none;
+                border-radius: 5px;
+                font-weight: bold;
+            } QPushButton:hover {
+                background-color: #2980b9;
+            }
+        """)
+        tombol_backToLoginPage.clicked.connect(self.fun_backToLoginPage)
         main_layout.addWidget(tombol_login)
+        main_layout.addWidget(tombol_backToLoginPage)
+
 
         self.setLayout(main_layout)
+
+    def fun_backToLoginPage(self):
+        self.close()
+
+        self.backToLoginPage = MainWindow()
+        self.backToLoginPage.show()
 
 
     def fun_verify(self):  # Hapus parameter email karena sudah ada self.user_email
@@ -255,22 +371,35 @@ class konfirmasi_login(QWidget):
             return
 
         try:
-            konfirmasi_verifyCode = users.find_one(
-                {"email": self.user_email},  # Gunakan self.user_email
-                {"email": 1, "verify_code": 1}
+            connect = mysql.connector.connect(
+                host="localhost",
+                user="root",
+                password="",
+                database="penerbangan"
             )
+            cursor = connect.cursor(dictionary=True)
 
-            if konfirmasi_verifyCode is None:
+            query = "SELECT verify_code, role FROM akun WHERE email = %s"
+            cursor.execute(query, (self.user_email,))
+            result = cursor.fetchone()
+
+            if result is None:
                 QMessageBox.warning(self, "gagal", "Email tidak ditemukan di database")
                 return
 
-            db_verify_code = konfirmasi_verifyCode.get('verify_code')
+            db_verify_code = result['verify_code']
+            user_role = result['role']
 
             if str(verify_code) == str(db_verify_code):
                 QMessageBox.information(self, "Notifikasi", "Berhasil, Anda akan diarahkan ke Dashboard")
+
+                update_query = "UPDATE akun SET verify_code = '0' WHERE email = %s"
+                cursor.execute(update_query, (self.user_email,))
+                connect.commit()
+
                 from WingsJourney import Home_Page
-                self.close()  # Tutup window konfirmasi
-                self.dashboard = Home_Page()
+                self.close()
+                self.dashboard = Home_Page(self.user_data)  # Pass user_data to Home_Page
                 app.setStyle("Fusion")
                 stylesheet_path = "style.qss"
                 apply_stylesheet(app, stylesheet_path)
@@ -278,8 +407,10 @@ class konfirmasi_login(QWidget):
             else:
                 QMessageBox.warning(self, "gagal", "kode verifikasi tidak valid")
 
+        except mysql.connector.Error as err:
+            QMessageBox.critical(self, "Kesalahan", f"Koneksi database gagal: {err}")
+
         except Exception as e:
-            print(f"Error: {str(e)}")
             QMessageBox.critical(self, "Error", f"Terjadi kesalahan: {str(e)}")
 
     def center_window(self):
@@ -292,14 +423,24 @@ class windowResetPass(QWidget):
 
     def __init__(self):
         super().__init__()
+        
+        # self.kirimPasswordEmail()
         self.IU()
         
     def IU(self):
+        
             self.setWindowTitle("WingJourney")
 
             self.resize(400, 210)
 
             self.center_window()
+            self.connect = mysql.connector.connect(
+            host="localhost", 
+            user="root",  
+            password="",  
+            database="penerbangan"  
+            )
+            self.cursor = self.connect.cursor()
 
             main_layout = QVBoxLayout()
 
@@ -381,21 +522,90 @@ class windowResetPass(QWidget):
     def kirimPasswordEmail(self):
         email = self.input_lupa_email.text().strip()
 
-        cari_password = users.find_one({"email": email})
-        if cari_password:
-            password = cari_password.get("password")
-
-            if password:
-                pesan_email = f"{password}"
-            else:
-                QMessageBox.warning(self, "Notifikasi", "Password tidak ada didatabase")
-
-        else:
-            QMessageBox.warning(self, "Notifikasi", "Email tidak terdaftar")
-
-        QMessageBox.information(self, "Notifikasi", "Tunggu Sebentar...")
+        if not email:
+            QMessageBox.warning(self, "Perhatian", "Email tidak boleh kosong!")
+            return
 
         try:
+            # Cek apakah email terdaftar
+            self.cursor.execute("SELECT id FROM akun WHERE email = %s", (email,))
+            user = self.cursor.fetchone()
+
+            if not user:
+                QMessageBox.warning(self, "Notifikasi", "Email tidak terdaftar")
+                return
+
+            # Generate password baru secara random
+            new_password = ''.join(random.choices(string.ascii_letters + string.digits, k=8))
+            
+            # Hash password baru
+            salt = bcrypt.gensalt()
+            hashed_password = bcrypt.hashpw(new_password.encode('utf-8'), salt)
+            
+            # Update password di database
+            self.cursor.execute("UPDATE akun SET password = %s WHERE email = %s", 
+                            (hashed_password.decode('utf-8'), email))
+            self.connect.commit()
+
+            html_content = f"""
+            <html>
+            <head>
+                <style>
+                    body {{
+                        font-family: Arial, sans-serif;
+                        background-color: #f9f9f9;
+                        color: #333;
+                        padding: 20px;
+                    }}
+                    .email-container {{
+                        background-color: #ffffff;
+                        padding: 20px;
+                        border: 1px solid #dddddd;
+                        border-radius: 8px;
+                        max-width: 600px;
+                        margin: auto;
+                    }}
+                    .header {{
+                        text-align: center;
+                        font-size: 24px;
+                        font-weight: bold;
+                        color: #0066CC;
+                    }}
+                    .content {{
+                        font-size: 16px;
+                        margin-top: 20px;
+                        line-height: 1.5;
+                    }}
+                    .footer {{
+                        text-align: center;
+                        font-size: 12px;
+                        color: #888888;
+                        margin-top: 20px;
+                    }}
+                </style>
+            </head>
+            <body>
+                <div class="email-container">
+                    <div class="header">Password Baru WingsJourney</div>
+                    <div class="content">
+                        <p>Halo,</p>
+                        <p>Berikut adalah Password Baru untuk Akun WingsJourney Anda:</p>
+                        <p style="font-size: 20px; font-weight: bold; text-align: center; color: #0066CC;">
+                            {new_password}
+                        </p>
+                        <p>Silakan login dengan password ini dan segera ganti password Anda untuk keamanan akun.</p>
+                    </div>
+                    <div class="footer">
+                        &copy; 2025 WingsJourney Business. Semua Hak Dilindungi.
+                    </div>
+                </div>
+            </body>
+            </html>
+            """
+            
+            try:
+                QMessageBox.information(self, "Notifikasi", "Tunggu Sebentar")
+
                 server = smtplib.SMTP("smtp.gmail.com", 587)
                 server.starttls()
 
@@ -405,25 +615,32 @@ class windowResetPass(QWidget):
                 # Membuat email
                 message = MIMEMultipart()
                 message['From'] = "telegramstarsbusines@gmail.com"
-                message['To'] = email  # Gunakan input_email untuk email tujuan
-                message['Subject'] = "Password WingJourney"
-                message.attach(MIMEText(f'Password anda adalah : {pesan_email}'))  # Isi dengan teks
+                message['To'] = email
+                message['Subject'] = "Password Baru WingJourney"
+                message.attach(MIMEText(html_content, "html"))
 
                 # Mengirim email
                 server.send_message(message)
-
                 server.quit()
 
-                # Tampilkan notifikasi setelah email bercari_email dikirim
-                QMessageBox.information(self, "Notifikasi", f"Password anda Sudah dikirim...")
+                QMessageBox.information(self, "Notifikasi", 
+                                    "Password baru telah dikirim ke email Anda. Silakan cek email Anda.")
 
-        except Exception as e:
+            except Exception as e:
                 print(f"Terjadi kesalahan: {e}")
                 QMessageBox.critical(self, "Kesalahan", f"Gagal mengirim email: {e}")
                 return
 
+        except mysql.connector.Error as err:
+            QMessageBox.critical(self, "Kesalahan", f"Error database: {err}")
+            return
+
+
     def kirimPasswordHp(self):
         QMessageBox.information(self, "Notifikasi", "Fitur ini akan segera tersedia")
+        return
+
+
 
     def center_window(self):
         qr = self.frameGeometry()
@@ -442,7 +659,8 @@ class windowResetPass(QWidget):
             QMessageBox.warning(self, "Perhatian", "Email tidak boleh kosong!")
             return
         
-        cari_email = users.find_one({"email": email})
+        self.cursor.execute("SELECT * FROM akun WHERE email = %s",(email,))
+        cari_email = self.cursor.fetchone()
 
         if not cari_email:
             verify_code = str(random.randint(100000, 999999))
@@ -451,15 +669,15 @@ class windowResetPass(QWidget):
                 "verify_code" : verify_code
             }
 
-            users.insert_one(data)
+            self.cursor.execute("INSERT INTO akun (email, verify_code) VALUES (%s, %s)", (email, verify_code))
+            self.conn.commit()
 
         else:
             verify_code = str(random.randint(100000, 999999))
             filter_email = {"email": email}
 
-            new_code = {"$set": {"verify_code": verify_code}}
-
-            users.update_one(filter_email, new_code)
+            self.cursor.execute("UPDATE akun SET verify_code = %s WHERE email = %s", (verify_code, email))
+            self.conn.commit()
 
             QMessageBox.information(self, "Sukses", f"Tunggu Sebentar.....")
 
@@ -467,6 +685,13 @@ class windowResetPass(QWidget):
 class register(QWidget):
     def __init__(self):
         super().__init__()
+        self.connect = mysql.connector.connect(
+            host="localhost", 
+            user="root",  
+            password="",  
+            database="penerbangan"  
+        )
+        self.cursor = self.connect.cursor()
         self.regist()
 
     def regist(self):
@@ -555,64 +780,98 @@ class register(QWidget):
         self.close()
 
         self.window_login = MainWindow()
-        self.window_login.show() 
+        self.window_login.show()
 
-    def fun_regist(self):
+     
+
+    def fun_regist(self, password):
         nama = self.input_nama.text().strip()
         email = self.input_regist_email.text().strip()
         nohp = self.input_regist_nohp.text().strip()
         password = self.input_regist_password.text().strip()
         konfirmasi_password = self.input_regist_konfirmasi_password.text().strip()
-        verify_code = 000000
+        verify_code = random.randint(100000, 999999)
 
-        cari_nama = users.find_one({"nama": nama})
-        cari_email = users.find_one({"email": email})
-        cari_nohp = users.find_one({"phone_number": nohp})
 
         if not nama or not email or not nohp or not password or not konfirmasi_password:
             QMessageBox.warning(self, "Peringatan", "Harap isi semua data")
             return
-        
+
         if not self.is_valid_email(email):
             QMessageBox.warning(self, "Peringatan", "Masukkan email yang valid")
             self.clear_email()
             return
 
-        if password == konfirmasi_password:
-                if not cari_email:
-                    if not cari_nama:
-                        if not cari_nohp:
-                                if nohp.isdigit():
-                                    data_regist = {
-                                            "nama" : nama,
-                                            "email" : email,
-                                            "phone_number": nohp,
-                                            "password": password,
-                                            "saldo": 0,
-                                            "verify_code": verify_code,
-                                        }
+        if password != konfirmasi_password:
+            QMessageBox.warning(self, "Peringatan", "Password dan Konfirmasi Password tidak cocok")
+            return
 
-                                    users.insert_one(data_regist)
-                                    QMessageBox.information(self, "Sukses", "Pendafataran Berhasil, Silahkan Login")
-                                    self.clear_text()
+        try:
+            # Cek email yang sudah terdaftar
+            self.cursor.execute("SELECT * FROM akun WHERE nama = %s", (nama,))
+            cari_email = self.cursor.fetchone()
 
-                                else:
-                                    QMessageBox.warning(self, "Peringatan", "Nomor Hp tidak valid")
-                                    self.clear_nohp()
-                        else:
-                            QMessageBox.warning(self, "Peringatan", "Nomor Hp sudah terdaftar")
-                            self.clear_nohp()
+            # Cek nama yang sudah terdaftar
+            self.cursor.execute("SELECT * FROM akun WHERE email = %s", (email,))
+            cari_nama = self.cursor.fetchone()
 
-                    else:
-                        QMessageBox.warning(self, "Peringatan", "Nama sudah terdaftar")
-                        self.clear_nama()
-                
-                else:
-                    QMessageBox.warning(self, "Peringatan", "Email sudah terdaftar")
-                    self.clear_email()
-        else:
-            QMessageBox.warning(self, "Peringatan", "Password harus sama")
+            # Cek nomor telepon yang sudah terdaftar
+            self.cursor.execute("SELECT * FROM akun WHERE no_telp = %s", (nohp,))
+            cari_nohp = self.cursor.fetchone()
+
+            if cari_email:
+                QMessageBox.warning(self, "Peringatan", "Email sudah terdaftar")
+                self.clear_email()
+                return
+
+            if cari_nama:
+                QMessageBox.warning(self, "Peringatan", "Nama sudah terdaftar")
+                self.clear_nama()
+                return
+
+            if cari_nohp:
+                QMessageBox.warning(self, "Peringatan", "Nomor HP sudah terdaftar")
+                self.clear_nohp()
+                return
+
+            if not nohp.isdigit():
+                QMessageBox.warning(self, "Peringatan", "Nomor HP tidak valid")
+                self.clear_nohp()
+                return
             
+            password = self.hash_password(password)
+
+            # Insert data baru
+            query = """
+            INSERT INTO akun (nama, email, no_telp, password, verify_code, saldo, role) 
+            VALUES (%s, %s, %s, %s, %s, %s, %s)
+            """
+
+            values = (nama, email, nohp, password, verify_code, 0, 'penumpang')
+            
+            self.cursor.execute(query, values)
+            self.connect.commit()
+
+            QMessageBox.information(self, "Sukses", "Pendaftaran Berhasil, Silahkan Login")
+            self.clear_text()
+            self.back_login()
+
+        except mysql.connector.Error as err:
+            print(f"Error: {err}")
+            QMessageBox.critical(self, "Error", f"Terjadi kesalahan database: {err}")
+            self.connect.rollback()
+
+        except Exception as e:
+            print(f"Error: {e}")
+            QMessageBox.critical(self, "Error", f"Terjadi kesalahan: {e}")
+            self.connect.rollback()
+            
+    
+    
+    def hash_password(self, password):
+        # Langsung menggunakan bcrypt untuk password
+        return bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
+
     
 
     def clear_text(self):
@@ -638,8 +897,6 @@ class register(QWidget):
         pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
         return re.match(pattern, email) is not None
 
-
-    
     def center_window(self):
         qr = self.frameGeometry()
         screen_center = QApplication.primaryScreen().availableGeometry().center()
@@ -647,13 +904,6 @@ class register(QWidget):
         self.move(qr.topLeft())
 
     
-
-    
-
-
-
-
-
 def apply_stylesheet(app, path):
     with open(path, "r") as file:
         qss = file.read()
