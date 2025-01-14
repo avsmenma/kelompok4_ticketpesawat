@@ -1,0 +1,106 @@
+QMainWindow {
+    background-color: #FAFAFA;
+}
+
+QDialog {
+    background-color: #FAFAFA;
+    color: black;
+}
+
+QMessageBox {
+    background-color: #FAFAFA;
+    color: black;
+}
+
+QLabel#judul {
+    color: #02C3BD;
+    font-family: Helvetica;
+    font-weight: bold;
+    font-size: 25px;
+}
+
+QLabel#subjudul {
+    color: black;
+    font-family: Yu Gothic;
+    font-size: 12px;
+}
+
+QLineEdit {
+    font-family: Calibri;
+    font-weight: bold;
+    height: 25px;
+    background-color: #5C9EAD;
+    color:  white;
+}
+
+QPushButton#tambah {
+    color: white;
+    background-color: #7BAE7F;
+    font-family: Calibri;
+    font-weight: bold;
+    height: 25px;
+}
+
+QPushButton#hapus {
+    color: white;
+    background-color: #DD1C1A;
+    font-family: Calibri;
+    font-weight: bold;
+    height: 25px;
+}
+
+QPushButton#cari {
+    color: white;
+    background-color: #5C9EAD;
+    font-family: Calibri;
+    font-weight: bold;
+    height: 25px;
+}
+
+QPushButton#out {
+    color: white;
+    background-color: #037171;
+    font-family: Arial;
+    font-weight: bold;
+    min-width: 50px;
+    max-width: 200px;
+    width:60px;
+}
+
+QPushButton {
+    color: white;
+    background-color: #037171;
+    font-family: Arial;
+    font-weight: bold;
+}
+
+QPushButton::hover {
+    background-color: #03312E;
+}
+
+QLabel {
+    color: black;
+    font-family: Yu Gothic;
+    font-size: 14px;
+}
+
+QTableWidget {
+    background-color: #FAFAFA;
+    color: black;
+}
+
+QHeaderView::section {
+    background-color: #5C9EAD;
+    color: white;
+    font-family: Arial;
+    font-weight:bold;
+}
+
+QHeaderView {
+    background-color: white;
+}
+
+QTableCornerButton::section {
+    background-color: #037171;
+}
+
