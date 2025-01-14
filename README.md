@@ -5,9 +5,10 @@ WingsJourney adalah sebuah aplikasi yang dirancang untuk mempermudah pengguna da
 ## Fitur Aplikasi
 - Menu Login dan Register
 - Fitur Lupa Password
-- Searching Data Penerbangan
+- Searching Data Penerbangan (User)
+- Melihat, menambah, dan menghapus data penerbangan (Admin)
 - Form Pemesanan Tiket
-- Transaksi tiket
+- Transaksi tiket menggunakan QR Code
 - Laporan Transaksi
 
 ## Tech
@@ -23,11 +24,11 @@ Aplikasi ini dibangun dengan
 - MySQL
 
 ## Instalasi
-Download PySide6 dari library python melalui terminal
+Install PySide6 dari library python melalui terminal
 ```
 pip install PySide6
 ```
-Kemudian download flask dari library python melalui terminal
+Kemudian install flask dari library python melalui terminal
 ```
 pip install flask
 ```
