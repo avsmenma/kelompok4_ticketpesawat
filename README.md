@@ -32,6 +32,10 @@ Kemudian install flask dari library python melalui terminal
 ```
 pip install flask
 ```
+Lalu install qrcode dari library python melalui terminal
+```
+pip install flask
+```
 Untuk menjalankan aplikasi ini, run file bernama main.py
 ```sh
 main.py
