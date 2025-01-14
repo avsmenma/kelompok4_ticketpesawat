@@ -22,19 +22,21 @@ Aplikasi ini dibangun dengan
 - Integrated Development Environment (IDE)
 - Python
 - MySQL
+- XAMPP
 
 ## Instalasi
 Install PySide6 dari library python melalui terminal
 ```
 pip install PySide6
 ```
-Kemudian install flask dari library python melalui terminal
 ```
 pip install flask
 ```
-Lalu install qrcode dari library python melalui terminal
 ```
 pip install qrcode
+```
+```
+pip install mysql-connector-python
 ```
 Untuk menjalankan aplikasi ini, run file bernama main.py
 ```sh
