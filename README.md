@@ -9,8 +9,7 @@
 - ❓ **Fitur Lupa Password**  
 - 🔍 **Searching Data Penerbangan (User)**  
 - 🛠️ **Melihat, Menambah, dan Menghapus Data Penerbangan (Admin)**  
-- 📝 **Form Pemesanan Tiket**  
-- 📱 **Transaksi Tiket Menggunakan QR Code**  
+- 📝 **Form Pemesanan Tiket**   
 - 📊 **Laporan Transaksi**  
 
 ---
@@ -40,8 +39,6 @@ Langkah-langkah instalasi:
     ```  
 2. Install library tambahan lainnya:  
     ```bash
-    pip install flask
-    pip install qrcode
     pip install mysql-connector-python
     pip install bcrypt
     ```  
