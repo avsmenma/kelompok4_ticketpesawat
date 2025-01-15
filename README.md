@@ -45,10 +45,47 @@ Langkah-langkah instalasi:
     pip install mysql-connector-python
     pip install bcrypt
     ```  
-3. Untuk menjalankan aplikasi ini, jalankan file bernama `main.py`:  
+3. Untuk menjalankan aplikasi ini, jalankan file bernama `main2.py`:  
     ```bash
-    main.py
+    python main2.py
     ```  
+
+---
+
+## 📘 Cara Penggunaan Aplikasi  
+1. **Install XAMPP sebagai Database**  
+   - Unduh dan install aplikasi XAMPP melalui tautan berikut:  
+     [Download XAMPP](https://www.apachefriends.org/download.html)  
+
+2. **Jalankan XAMPP**  
+   - Buka aplikasi XAMPP.  
+   - Pada bagian modul **Apache** dan **MySQL**, klik tombol **Start** di kolom **Actions**.  
+
+3. **Akses phpMyAdmin**  
+   - Klik tombol **Admin** di modul **MySQL**. Anda akan diarahkan ke browser menuju halaman `localhost/phpMyAdmin/`.  
+
+4. **Buat Database**  
+   - Di halaman phpMyAdmin, tekan bagian **New**.  
+   - Isi nama database dengan `penerbangan` dan ubah collation menjadi `utf8_general_ci`.  
+   - Klik tombol **Create Database**.  
+
+5. **Import File Database**  
+   - Masuk ke database `penerbangan`.  
+   - Pilih menu **Import**, lalu unggah file bernama `penerbangan-2.sql`.  
+   - Gulir ke bawah dan tekan tombol **Import**.  
+
+6. **Akses Folder Proyek**  
+   - Salin alamat folder tempat Anda menyimpan file **GitHub kelompok4_ticketpesawat**.  
+   - Buka terminal atau command prompt, lalu ketik:  
+     ```bash
+     cd [alamat_folder]
+     ```  
+
+7. **Jalankan Aplikasi**  
+   - Ketik perintah berikut untuk menjalankan aplikasi:  
+     ```bash
+     python main2.py
+     ```  
 
 --- 
 
