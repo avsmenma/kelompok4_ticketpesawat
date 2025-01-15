@@ -52,7 +52,7 @@ Langkah-langkah instalasi:
 
 ---
 
-## 📘 Cara Penggunaan Aplikasi  
+## 📘 Mempersiapkan Aplikasi  
 1. **Install XAMPP sebagai Database**  
    - Unduh dan install aplikasi XAMPP melalui tautan berikut:  
      [Download XAMPP](https://www.apachefriends.org/download.html)  
